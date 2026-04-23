@@ -18,7 +18,7 @@
 1. **Клонирование репозитория**
 ```
 git clone https://github.com/Matyuzha/python_project.git
-cd file_sorter
+cd python_project
 ```
 
 2. **Установка необходимых библиотек**
