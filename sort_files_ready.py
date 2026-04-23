@@ -83,6 +83,25 @@ def calculate_total_size(folder_path: str) -> int:
                 pass
     return total
 
+# Функция создания бэкапа
+def create_backup(source_folder):
+    """Создает zip-архив папки в безопасном месте"""
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    
+    # Создаем путь к папке "Documents" текущего пользователя
+    # Это гарантирует наличие прав на запись
+    user_docs = os.path.expanduser("C:\Sort_Backups")
+    if not os.path.exists(user_docs):
+        os.makedirs(user_docs)
+        
+    backup_name = f"backup_{os.path.basename(source_folder)}_{timestamp}"
+    backup_full_path = os.path.join(user_docs, backup_name)
+    
+    # Создаем архив
+    # format='zip' добавит расширение .zip автоматически
+    archive_path = shutil.make_archive(backup_full_path, 'zip', source_folder)
+    return archive_path
+
 # Функция для создания папок, если они не существуют
 def create_folder(folder_path):
     if not os.path.exists(folder_path):
@@ -419,10 +438,15 @@ def save_html_report(report_content: str, output_path: str = None) -> str:
     return output_path
 
 # Функция для сортировки файлов
-def sort_files_v2(source_folder, sort_by, selected_list, custom_rules=None):
+def sort_files_v2(source_folder, sort_by, selected_list, custom_rules=None, make_backup_flag=False):
                 start_time = datetime.now()
                 results = {'sorted': 0, 'skipped': 0, 'errors': 0, 'categories': {}, 'total_size': 0}
-                
+                if make_backup_flag:
+                    try:
+                        backup_file = create_backup(source_folder)
+                        results['backup'] = backup_file # Путь к архиву пойдет в HTML отчет
+                    except Exception as e:
+                        st.error(f"Не удалось создать бэкап: {e}")
                 # Вместо os.walk берем только выбранные файлы из корня папки
                 for file in selected_list:
                     file_path = os.path.join(source_folder, file)
@@ -505,6 +529,12 @@ with st.sidebar:
     # Дополнительные опции
     st.subheader("🛡️ Дополнительно")
     
+    do_backup = st.checkbox(
+        "📦 Создать бэкап (ZIP)",
+        value=False,
+        help="Создаст полную копию папки в ZIP-архиве перед перемещением файлов"
+    )
+
     generate_report = st.checkbox(
         "📊 Создать HTML отчет",
         value=True,
@@ -606,7 +636,8 @@ if run_button:
                 source_folder, 
                 sort_method, 
                 selected_filenames, # Передаем список выбранных
-                custom_rules
+                custom_rules,
+                make_backup_flag=do_backup
             )
             
             # Показываем результаты
