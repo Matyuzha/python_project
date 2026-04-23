@@ -17,7 +17,7 @@
 
 1. **Клонирование репозитория**
 ```
-git clone [https://github.com/ваш_логин/file_sorter.git](https://github.com/ваш_логин/file_sorter.git)
+git clone https://github.com/Matyuzha/python_project.git
 cd file_sorter
 ```
 
